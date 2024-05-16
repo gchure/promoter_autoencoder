@@ -1,0 +1,10 @@
+*.DS_*tore
+*.tmp
+*.swp
+*.log
+*.bbl
+*.jpg
+*.jpeg
+*.pyc*
+*checkpoints*
+*__pycache__*
