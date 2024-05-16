@@ -6,11 +6,11 @@ import skimage.io
 import matplotlib.pyplot as plt
 
 # Define a random seed for shuffling the rows to partition into train, validation, and test sets
-seed = 387962 #Generated from numpy.random.randint(0, 1E6, 1)
+seed = 388962 #Generated from numpy.random.randint(0, 1E6, 1)
 
 # Load and shuffle the data
 data = pd.read_csv('../data/promoter_sequences.csv')
-data = data.sample(frac=1, random_state=seed)
+data = data.sample(frac=1, random_state=seed).reset_index()
 
 # Define the fractions for the train, validation, and test sets
 train_frac = 0.8
@@ -24,7 +24,10 @@ test_data = data.iloc[int((train_frac+dev_frac)*len(data)):]
 # Define a base encoder
 encoder = {'A': 0, 'T': 1, 'G': 2, 'C': 3}
 
+# avg_im = np.zeros((4, len(encoded_seq)))
 # Iterate over the data sets
+pavg_im = np.zeros((4, 40))
+mavg_im = np.zeros((4, 40))
 for d, f in zip([train_data, dev_data, test_data], ['train', 'dev', 'test']):
     for i in tqdm.tqdm(range(len(d))):
         seq = d.iloc[i]['sequence_5-3']
@@ -37,5 +40,13 @@ for d, f in zip([train_data, dev_data, test_data], ['train', 'dev', 'test']):
         for j, base in enumerate(encoded_seq):
             onehot[base, j] = 1
         onehot = onehot.astype('uint8')
+        if d['strand'].iloc[i] == '-':
+            mavg_im += onehot
+        else:
+            pavg_im += onehot
+        
         skimage.io.imsave(f'../data/images/{f}/{promoter_id}-{promoter_name}.bmp', onehot,
                           check_contrast=False)
+
+pavg_im /= len(data[data['strand'] == '+'])
+mavg_im /= len(data[data['strand'] == '-'])

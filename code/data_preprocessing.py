@@ -2,7 +2,7 @@
 import numpy as np 
 import pandas as pd 
 import tqdm
-PROMOTER_WINDOW_LENGTH=45
+PROMOTER_WINDOW_LENGTH = 40 
 
 # Load the ecocyc promoters and 
 ecocyc_promoters = pd.read_csv('../data/ecocyc_transcription_units.txt', delimiter='\t')
@@ -36,14 +36,12 @@ with open('../data/escherichia_coli_K12_MG1655_genome.fasta', 'r') as f:
             encoded_genome.append(int_mapper[base]) 
 encoded_genome = np.array(encoded_genome)
 
-#%%
-#%%
 proc_data = pd.DataFrame([])
 for i in tqdm.tqdm(range(len(ecocyc_promoters))):
 
     # Get the promoter information
     promoter = ecocyc_promoters.iloc[i]
-    plus1 = promoter['Absolute-Plus-1-Position']
+    plus1 = promoter['Absolute-Plus-1-Position'] - 1
     promoter_name = promoter['Promoter']
     strand = promoter['Transcription-Direction']
     promoter_id = promoter['promoter_id']
@@ -61,11 +59,11 @@ for i in tqdm.tqdm(range(len(ecocyc_promoters))):
 
     # Get the promoter sequence
     if strand == '-':
-        window = np.s_[plus1-1:plus1+PROMOTER_WINDOW_LENGTH]
+        window = np.s_[plus1-1:plus1-1+PROMOTER_WINDOW_LENGTH]
         encoded_promoter = encoded_genome[window]
         encoded_promoter = np.array([rev_comp[base] for base in encoded_promoter[::-1]])
     else:
-        window = np.s_[plus1-PROMOTER_WINDOW_LENGTH-1:plus1]
+        window = np.s_[plus1-PROMOTER_WINDOW_LENGTH:plus1]
         encoded_promoter = np.array(encoded_genome[window])
 
     # Compute the reverse complement of the promoter
@@ -77,7 +75,8 @@ for i in tqdm.tqdm(range(len(ecocyc_promoters))):
                         'regulated_genes': [genes],
                         'sigma_factors': [sigma_factors],
                         'strand': strand,
-                        'sequence_5-3': [seq]},
+                        'sequence_5-3': [seq],
+                        'promoter_length': len(seq)},
                         index=[0])
     proc_data = pd.concat([proc_data, _df], axis=0)
 proc_data.to_csv('../data/promoter_sequences.csv', index=False)
