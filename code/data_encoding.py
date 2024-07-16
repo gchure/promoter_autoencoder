@@ -38,14 +38,13 @@ for d, f in zip([train_data, dev_data, test_data], ['train', 'dev', 'test']):
         # Generate a one-hot encoding of the promoter sequence
         onehot = np.zeros((4, len(encoded_seq)))
         for j, base in enumerate(encoded_seq):
-            onehot[base, j] = 1
-        onehot = onehot.astype('uint8')
+            onehot[base, j] = 1  
         if d['strand'].iloc[i] == '-':
             mavg_im += onehot
         else:
             pavg_im += onehot
         
-        skimage.io.imsave(f'../data/images/{f}/{promoter_id}-{promoter_name}.bmp', onehot,
+        skimage.io.imsave(f'../data/images/{f}/{promoter_id}-{promoter_name}.png', onehot,
                           check_contrast=False)
 
 pavg_im /= len(data[data['strand'] == '+'])
